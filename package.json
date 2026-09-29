@@ -1,0 +1,12 @@
+{
+  "name": "take-home-assignment-the-untested-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Task Manager API root configuration for zero-config deployments",
+  "scripts": {
+    "postinstall": "npm --prefix task-api install",
+    "start": "npm --prefix task-api start",
+    "test": "npm --prefix task-api test",
+    "coverage": "npm --prefix task-api run coverage"
+  }
+}

@@ -105,9 +105,13 @@ curl -X PATCH http://localhost:3000/tasks/<id>/complete
 
 ## What to Submit
 
-See [ASSIGNMENT.md](./ASSIGNMENT.md) for full submission requirements. At minimum, include:
+See [ASSIGNMENT.md](./ASSIGNMENT.md) for full submission requirements.
 
-- **Test files** — covering the endpoints and edge cases you identified
-- **Bug report** — what you found, where in the code, and why it's a bug (not just symptoms)
-- **At least one fix** — with a note on your approach
-- **`PATCH /tasks/:id/assign` implementation** — plus a short explanation of any design decisions (validation, edge cases, etc.)
+- **Submission Notes & Reflections:** See **[SUBMISSION_NOTES.md](./SUBMISSION_NOTES.md)**
+- **Detailed Architecture & Decisions:** See **[SUBMISSION.md](./SUBMISSION.md)**
+- **Bug Report:** See **[BUG_REPORT.md](./BUG_REPORT.md)**
+- **Test files:** Located under `task-api/tests/` (unit and integration)
+- **Bug Fix:** Fixed 1-based pagination offset calculation in `taskService.getPaginated`
+- **New Feature:** Implemented `PATCH /tasks/:id/assign` with full validation and test coverage
+
+

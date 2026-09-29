@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager API — Interactive Dashboard</title>
+  <meta name="description" content="A modern, high-performance task management interface connected to the Task Manager REST API.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">
+          <h1>Task Manager</h1>
+          <p>The Untested API &mdash; Interactive Dashboard</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="seedBtn" class="btn btn-secondary btn-sm" title="Populate realistic test tasks">
+          🌱 Seed Sample Tasks
+        </button>
+        <button id="openCreateModalBtn" class="btn btn-primary">
+          <span>+</span> New Task
+        </button>
+      </div>
+    </header>
+
+    <!-- Stats Grid -->
+    <section class="stats-grid" id="statsSection">
+      <div class="stat-card stat-todo">
+        <div class="stat-label">To Do</div>
+        <div class="stat-value" id="statTodo">0</div>
+      </div>
+      <div class="stat-card stat-in_progress">
+        <div class="stat-label">In Progress</div>
+        <div class="stat-value" id="statInProgress">0</div>
+      </div>
+      <div class="stat-card stat-done">
+        <div class="stat-label">Completed</div>
+        <div class="stat-value" id="statDone">0</div>
+      </div>
+      <div class="stat-card stat-overdue">
+        <div class="stat-label">Overdue</div>
+        <div class="stat-value">
+          <span id="statOverdue">0</span>
+          <span class="stat-badge" id="overdueBadge" style="display:none; background: var(--danger-bg); color: var(--danger);">Urgent</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Toolbar -->
+    <section class="toolbar">
+      <div class="filter-group">
+        <button class="filter-btn active" data-status="">All Tasks</button>
+        <button class="filter-btn" data-status="todo">To Do</button>
+        <button class="filter-btn" data-status="in_progress">In Progress</button>
+        <button class="filter-btn" data-status="done">Completed</button>
+      </div>
+
+      <div class="toolbar-right">
+        <select id="limitSelect" class="form-select" style="padding: 0.35rem 0.6rem; font-size: 0.8rem;">
+          <option value="6">6 per page</option>
+          <option value="12" selected>12 per page</option>
+          <option value="24">24 per page</option>
+        </select>
+        <button id="refreshBtn" class="btn btn-secondary btn-sm" title="Refresh task list">
+          🔄 Refresh
+        </button>
+      </div>
+    </section>
+
+    <!-- Tasks Grid -->
+    <main class="tasks-grid" id="tasksGrid">
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h3>Loading tasks...</h3>
+      </div>
+    </main>
+
+    <!-- Pagination -->
+    <div class="pagination-bar" id="paginationBar">
+      <div class="pagination-info" id="paginationInfo">Page 1</div>
+      <div class="pagination-controls">
+        <button id="prevPageBtn" class="btn btn-secondary btn-sm" disabled>&larr; Previous</button>
+        <button id="nextPageBtn" class="btn btn-secondary btn-sm">Next &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Task Modal -->
+  <div class="modal-overlay" id="createModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Create New Task</h3>
+        <button class="btn-close" id="closeCreateModalBtn">&times;</button>
+      </div>
+      <form id="createTaskForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Task Title *</label>
+            <input type="text" id="createTitle" class="form-input" placeholder="e.g. Implement PATCH /tasks/:id/assign" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea id="createDesc" class="form-textarea" rows="2" placeholder="Optional details..."></textarea>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <select id="createStatus" class="form-select">
+                <option value="todo" selected>To Do</option>
+                <option value="in_progress">In Progress</option>
+                <option value="done">Done</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Priority</label>
+              <select id="createPriority" class="form-select">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Due Date</label>
+            <input type="datetime-local" id="createDueDate" class="form-input">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelCreateBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Assign Task Modal -->
+  <div class="modal-overlay" id="assignModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Assign Task</h3>
+        <button class="btn-close" id="closeAssignModalBtn">&times;</button>
+      </div>
+      <form id="assignTaskForm">
+        <input type="hidden" id="assignTaskId">
+        <div class="modal-body">
+          <p id="assignTaskTitle" style="font-size: 0.9rem; color: #fff; font-weight: 600; margin-bottom: 0.5rem;"></p>
+          <div class="form-group">
+            <label class="form-label">Assignee Name *</label>
+            <input type="text" id="assigneeInput" class="form-input" placeholder="e.g. Aryan" required autofocus>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Quick Suggestions</label>
+            <div class="quick-chips">
+              <button type="button" class="quick-chip" data-user="Aryan">Aryan</button>
+              <button type="button" class="quick-chip" data-user="Rahul">Rahul</button>
+              <button type="button" class="quick-chip" data-user="Alice">Alice</button>
+              <button type="button" class="quick-chip" data-user="Bob">Bob</button>
+              <button type="button" class="quick-chip" data-user="Charlie">Charlie</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelAssignBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Assignment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Task Modal -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Task</h3>
+        <button class="btn-close" id="closeEditModalBtn">&times;</button>
+      </div>
+      <form id="editTaskForm">
+        <input type="hidden" id="editTaskId">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Task Title *</label>
+            <input type="text" id="editTitle" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea id="editDesc" class="form-textarea" rows="2"></textarea>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <select id="editStatus" class="form-select">
+                <option value="todo">To Do</option>
+                <option value="in_progress">In Progress</option>
+                <option value="done">Done</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Priority</label>
+              <select id="editPriority" class="form-select">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Due Date</label>
+            <input type="datetime-local" id="editDueDate" class="form-input">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
